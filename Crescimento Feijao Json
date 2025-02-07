@@ -1,0 +1,85 @@
+import json
+import calendar
+from datetime import datetime
+
+#class to create the "registro"
+def registrar_crescimento():
+    print("\n--- Registro do Crescimento do Feijão ---")
+    data = input("Digite a data (dd/mm/yyyy): ")
+    altura = float(input("Digite a altura do feijão em centímetros: "))
+    observacao = input("Adicione uma observação sobre o feijão (opcional): ")
+
+    # verificação do dado "data"
+    try:
+        data_obj = datetime.strptime(data, "%d/%m/%Y")
+    except ValueError:
+        print("Formato de data inválido. Use dd/mm/yyyy.")
+        return None
+
+    #busco o dia que se iniciou e verifico se o ano e bissexto
+    dia_semana = calendar.day_name[data_obj.weekday()]
+    ano_bissexto = calendar.isleap(data_obj.year)
+
+    # dados json
+    registro = {
+        "data": data,
+        "altura_cm": altura,
+        "observacao": observacao,
+        "dia_semana": dia_semana,
+        "ano_bissexto": ano_bissexto
+    }
+    return registro
+
+# classe para salvar os dados registro em um banco de dados json 
+def salvar_dados_json(arquivo, dados):
+    # verifica a abertura do arquivo json, se não é criado o arquivo
+    try:
+        with open(arquivo, "r") as f:
+            registros = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        registros = []
+
+    registros.append(dados)
+
+    with open(arquivo, "w") as f:
+        json.dump(registros, f, indent=4, ensure_ascii=False)
+    print("Dados salvos com sucesso!")
+
+
+def main():
+    arquivo_json = "crescimento_feijao.json"
+    while True:
+      # three options, criação do registro, exibição do registro e o break da aplicação
+        print("\n1. Registrar crescimento")
+        print("2. Exibir registros")
+        print("3. Sair")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "1":
+            registro = registrar_crescimento()
+            if registro:
+                salvar_dados_json(arquivo_json, registro)
+        elif opcao == "2":
+              # alem de exibir, tem que fazer o formato de exibicao
+            try:
+                with open(arquivo_json, "r") as f:
+                    registros = json.load(f)
+                    if registros:
+                        print("\n--- Registros do Crescimento ---")
+                        for reg in registros:
+                            print(f"Data: {reg['data']}, Altura: {reg['altura_cm']} cm, "
+                                  f"Dia da Semana: {reg['dia_semana']}, "
+                                  f"Ano Bissexto: {reg['ano_bissexto']}, "
+                                  f"Observação: {reg['observacao']}")
+                    else:
+                        print("Nenhum registro encontrado.")
+            except FileNotFoundError:
+                print("Nenhum registro encontrado.")
+        elif opcao == "3":
+            print("Saindo...")
+            break
+        else:
+            print("Opção inválida! Tente novamente.")
+
+if __name__ == "__main__":
+    main()
