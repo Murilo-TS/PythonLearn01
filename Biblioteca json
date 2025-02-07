@@ -1,0 +1,84 @@
+import json
+import datetime
+import calendar
+
+def Resgistrar_Livro():
+    titulo = input("Digite o Título do livro: ")
+    autor = input("Digite o autor: ")
+    ano_publicado = input("Digite o ano em que foi publicado: ")
+    nrpaginas = int(input("Digite o numero de páginas: "))
+    datcadastro = datetime.date.today()
+    
+    if nrpaginas <= 0:
+        print("O número de páginas precisa ser maior q zero.")
+        return None
+        
+    categoria_livro = input("Digite a categoria do livro: ")
+
+    try:
+        mes = int(input("Digite o numero do mes atual: "))
+    except ValueError:
+        print("Digite somente de 1-12.")
+        return None
+
+    mes_cadastro = calendar.month_name[mes]
+
+    registro = {
+        'titulo' : titulo,
+        'autor' : autor,
+        'ano_publicacao' : ano_publicado,
+        'nr_paginas' : nrpaginas,
+        'categoria_livro' : categoria_livro,
+        'data_cadastro' : datcadastro,
+        'mes_cadastro' : mes_cadastro
+    }
+    return registro
+
+def Salvar_Livro(arquivo, dados):
+    try:
+        with open(arquivo, "r") as f:
+            registros = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        registros = []
+
+    registros.append(dados)
+
+    with open(arquivo, "w") as f:
+        json.dump(registros, f, indent=4, ensure_ascii=False)
+    print("Dados salvos com sucesso!")
+
+def main():
+
+    arquivo = "Banco_livros.json"
+
+    while True:
+
+        print("1 - cadastrar livro \n2 - exibir livro \n3 - Sair")
+        opc = input("Digite uma das opcoes acima: ")
+
+        if opc == "1":
+            registro = Resgistrar_Livro()
+            if registro:
+                Salvar_Livro(arquivo, registro)
+        elif opc == "2":
+            try: 
+                with open(arquivo, 'r') as f:
+                    registros = json.load(f)
+                    if registros:
+                        print("--- Dados do livro ---")
+                        for reg in registros:
+                            print(f"Título: {reg['titulo']} |"f" Autor: {reg['autor']}\n"
+                                  f"Número de pág: {reg['nr_paginas']} |"f" Categoria: {reg['categoria_livro']}\n"
+                                  f"Ano de publicação: {reg['ano_publicacao']}\n"
+                                  f"Data e Mês em que foi cadastrado: {reg['data_cadastro']} | {reg['mes_cadastro']}\n"
+                                  "--- Carregado com Sucesso ---")
+            except FileNotFoundError:
+                print("Nenhum registro encontrado.")
+
+        elif opc == "3":
+            break
+        else:
+            print("Opção inválida")
+
+if __name__ == '__main__':
+    main()
